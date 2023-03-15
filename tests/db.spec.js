@@ -78,7 +78,7 @@ describe('Database', () => {
       it('Array contains objects', async () => {
         expect(typeof singleReport).toBe('object');
       });
-      it('individual report objects contain id, title, location, description, password, isOpen, expirationDate', async () => {
+      it('individual report objects contain id, title, location, description, isOpen, expirationDate, isExpired', async () => {
         expect(singleReport).toEqual(expect.objectContaining({
           id: expect.any(Number),
           title: expect.any(String),
