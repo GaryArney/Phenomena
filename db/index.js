@@ -10,7 +10,7 @@ const client = new Client(CONNECTION_STRING);
 /**
  * Report Related Methods
  */
-
+ 
 /**
  * You should select all reports which are open. 
  *  
@@ -140,55 +140,59 @@ async function closeReport(reportId, password) {
   try {
     // First, actually grab the report with that id
     const { rows: [report] } = await client.query(`
-    SELECT *
+    SELECT id
     FROM reports
     WHERE id=${reportId};
     `) //this should only return one row
-
+console.log('reporttttttttttttttttttttt',report);
     // If it doesn't exist, throw an error with a useful message
   if (!report) {
     throw Error('Report does not exist with that id');
   }    
+
   const { rows: [userPassword] } = await client.query(`
-  SELECT *
+  SELECT password
   FROM reports
   WHERE id=${reportId} AND password='${password}';
   
   `)
     // If the passwords don't match, throw an error
-
+console.log('userpaswworddddddddddddd',userPassword);
   if (!userPassword) {
     throw Error('Password incorrect for this report, please try again');
   }
     // If it has already been closed, throw an error with a useful message
 
-  // const { rows: [open] } = await client.query(`
-  // SELECT *
-  // FROM reports
-  // WHERE id=${reportId} AND "isOpen"='false';
-  // `)
   const singleReport = await _getReport(reportId)
 
   if (singleReport.isOpen === false) {
     throw Error('This report has already been closed')
   }  
-
+console.log('singlereportttttttttttttttt',singleReport);
     // Finally, update the report if there are no failures, as above
-  const { rows: [noFailures]} = await client.query(`
-  SELECT *
-  FROM reports
-  WHERE id=${reportId} AND "isOpen"='true'
-  AND password='${password}';
-  `)
-
-  if (noFailures) {
-    const {rows: [updateReport] } = await client.query(`
+  // const { rows: [noFailures]} = await client.query(`
+  // SELECT *
+  // FROM reports
+  // WHERE id=${reportId} AND "isOpen"='true'
+  // AND password='${password}';
+  // `)
+console.log('fail beforeeeeeeeeeeee',singleReport.isOpen,'REportId',reportId,'PASSword',password);
+  if (singleReport.isOpen === true) {
+    const {rows: [updateReport]} = await client.query(`
     UPDATE reports
     SET "isOpen"='false'
-    WHERE id=${reportId};
-    `)
-   return { message: "Report successfully closed!"}; ///F FINALLY
+    WHERE id=$1
+    RETURNING *;
+    `, [reportId])
+    console.log('updatesssssss',updateReport);
+console.log('fail afterrrrrrrrrrrrrr',singleReport,'REportId',reportId,'PASSword',password);
+return ({ message: "Report successfully closed!"}); ///F FINALLY
   }
+    // if(noFailures.isOpen === false){
+    //   return ({ message: "Report successfully closed!"}); ///F FINALLY
+
+    // } 
+  
 
     // Return a message stating that the report has been closed
 
@@ -211,7 +215,7 @@ async function closeReport(reportId, password) {
 async function createReportComment(reportId, commentFields) {
   // read off the content from the commentFields
   const comment = commentFields.content;
-console.log('comment content', commentFields.content);
+
 
   try {
     // grab the report we are going to be commenting on
@@ -224,12 +228,11 @@ const report = await _getReport(reportId);
 
     // if it is not open, throw an error saying so
     if (report.isOpen === false) {
-      throw Error('That report has been closed');
+      throw Error('That report has been closed, no comment has been made');
     }
 
     // if the current date is past the expiration, throw an error saying so
     // you can use Date.parse(report.expirationDate) < new Date() to check
-    console.log("checking DATA???", Date.parse(report.expirationDate));
     if (Date.parse(report.expirationDate) < new Date()) {
       throw Error('The discussion time on this report has expired, no comment has been made')
     }
@@ -240,13 +243,11 @@ const report = await _getReport(reportId);
     RETURNING *;
 
     `, [comment])
-console.log('New comment???', newComment);
-console.log('regular comment', comment);
     // then update the expiration date to a day from now
+
 
 //     const currDate = new Date(report.expirationDate);
 // currDate.setHours(currDate.getHours() + 24);
-console.log('report ID???', reportId);
 const { rows: [newDate] } = await client.query(`
   UPDATE reports
   SET "expirationDate" = CURRENT_TIMESTAMP + interval '1 day'
