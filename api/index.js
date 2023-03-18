@@ -23,12 +23,6 @@ router.get('/reports', async(req, res, next) => {
 
 })
 
-// router.delete('/reports/:reportId', (req,res, next) => {     <=THIS WAS AN EXAMPLE
-//     console.log('')
-// })
-
-
-
 /**
  * Set up a POST request for /reports
  * 
@@ -40,7 +34,8 @@ router.get('/reports', async(req, res, next) => {
 router.post('/reports', async (req, res, next) => {
     try {
         const reports = await createReport(req.body)
-        res.send({ reports });
+        // console.log('REPORTTTSSSS',reports,'BODY?',req.body);
+        res.send(reports);
     } catch(err) {
         next(err);
     }
@@ -56,18 +51,21 @@ router.post('/reports', async (req, res, next) => {
  * - on success, it should send back the object returned by closeReport
  * - on caught error, call next(error)
  */
-router.delete('/reports/:reportId', async (req, res, next) => {
-    try {
-        const { reportId } = req.params;
-        const { password } = req.body;      
-        const message = await closeReport(reportId, password);
-        console.log('messagegrabbedddddddddddd');
-        res.send({message});
-        return what
-    } catch(err) {
-        next(err);
-    }
+router.delete('/reports/:id', async (req, res, next) => {
+    // console.log("DELETE REQUEST RECEIVED");
+    const reportId = req.params.id;
+    const { password } = req.body; 
 
+    try {
+
+    // console.log('Password:', password, 'reportId:', reportId, 'ID:',req.params.id);  
+
+        const message = await closeReport(reportId, password);           
+            res.send(message);
+
+    } catch(error) {
+        next(error);
+    }
 })
 
 
@@ -82,14 +80,19 @@ router.delete('/reports/:reportId', async (req, res, next) => {
  * - on success, it should send back the object returned by createReportComment
  * - on caught error, call next(error)
  */
-router.post('/reports/:reportId/comments', async (req, res, next) =>{
+router.post('/reports/:id/comments', async (req, res, next) =>{
+
 
     try{
-        const { reportId } = req.params;
-        const { commentFields } = req.body;
-        const newComment = await createReportComment(reportId, commentFields);
-            res.send({ newComment })
+        const { id } = req.params;
+        const  commentFields  = req.body;
 
+        if(id && commentFields){
+            // console.log('COMMENTFIELDSS',commentFields, 'ID', id);
+        const newComment = await createReportComment(id, commentFields);
+        // console.log('NEWCOOOOOOOOOOOOOOOOOOOOMENT',newComment.content)
+            res.send( newComment )
+        }
     } catch(err) {
         next(err);
     }

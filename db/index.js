@@ -44,7 +44,10 @@ async function getOpenReports() {
     //    you can use Date.parse(report.expirationDate) < new Date()
     // also, remove the password from all reports
 reports.forEach((report) => {
-  delete report.password
+  // console.log('report:',report,'reports',reports);
+  delete reports.password //ARE YOU KIDDING ME?
+  // console.log('report:',report,'reports',reports);
+
   report.isExpired = report.expirationDate < new Date(); //checks if it's expired first
   report.comments = comments.filter((comment) => comment.reportId === report.id  )
 });
@@ -144,7 +147,7 @@ async function closeReport(reportId, password) {
     FROM reports
     WHERE id=${reportId};
     `) //this should only return one row
-console.log('reporttttttttttttttttttttt',report);
+// console.log('reporttt',report,'reportId:',reportId,'password:',password);
     // If it doesn't exist, throw an error with a useful message
   if (!report) {
     throw Error('Report does not exist with that id');
@@ -157,7 +160,7 @@ console.log('reporttttttttttttttttttttt',report);
   
   `)
     // If the passwords don't match, throw an error
-console.log('userpaswworddddddddddddd',userPassword);
+// console.log('userpaswworddddddddddddd',userPassword);
   if (!userPassword) {
     throw Error('Password incorrect for this report, please try again');
   }
@@ -168,7 +171,7 @@ console.log('userpaswworddddddddddddd',userPassword);
   if (singleReport.isOpen === false) {
     throw Error('This report has already been closed')
   }  
-console.log('singlereportttttttttttttttt',singleReport);
+// console.log('singlereportttttttttttttttt',singleReport);
     // Finally, update the report if there are no failures, as above
   // const { rows: [noFailures]} = await client.query(`
   // SELECT *
@@ -176,17 +179,17 @@ console.log('singlereportttttttttttttttt',singleReport);
   // WHERE id=${reportId} AND "isOpen"='true'
   // AND password='${password}';
   // `)
-console.log('fail beforeeeeeeeeeeee',singleReport.isOpen,'REportId',reportId,'PASSword',password);
+// console.log('fail before:',singleReport.isOpen,'ReportId:',reportId,'PassSword:',password);
   if (singleReport.isOpen === true) {
     const {rows: [updateReport]} = await client.query(`
     UPDATE reports
     SET "isOpen"='false'
     WHERE id=$1
-    RETURNING *;
+    RETURNING "isOpen";
     `, [reportId])
     console.log('updatesssssss',updateReport);
-console.log('fail afterrrrrrrrrrrrrr',singleReport,'REportId',reportId,'PASSword',password);
-return ({ message: "Report successfully closed!"}); ///F FINALLY
+// console.log('fail after:',singleReport,'ReportId:',reportId,'Password:',password);
+return ({ message: "Report successfully closed!"}); 
   }
     // if(noFailures.isOpen === false){
     //   return ({ message: "Report successfully closed!"}); ///F FINALLY
@@ -220,7 +223,7 @@ async function createReportComment(reportId, commentFields) {
   try {
     // grab the report we are going to be commenting on
 const report = await _getReport(reportId);
-
+// console.log('OGREPORT', report,"isitOPEN?",report.isOpen);
     // if it wasn't found, throw an error saying so
     if (!report) {
       throw Error('That report does not exist, no comment has been made')
@@ -230,7 +233,7 @@ const report = await _getReport(reportId);
     if (report.isOpen === false) {
       throw Error('That report has been closed, no comment has been made');
     }
-
+// console.log('REPORTEXPIREBEFORE:',report.expirationDate);
     // if the current date is past the expiration, throw an error saying so
     // you can use Date.parse(report.expirationDate) < new Date() to check
     if (Date.parse(report.expirationDate) < new Date()) {
@@ -254,7 +257,8 @@ const { rows: [newDate] } = await client.query(`
   WHERE id=$1 AND reports."isOpen"='true'
   RETURNING *;
 `, [reportId]);
-
+// console.log('REPORTEXPIREAFTER:',report.expirationDate);
+// console.log('CCCCCommetTTTT',comment, 'newComment',newComment);
 // Finally, return the new comment and report objects
 return newComment;
 
