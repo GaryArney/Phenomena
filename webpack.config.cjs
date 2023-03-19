@@ -1,9 +1,9 @@
 module.exports = {
-    devtools: 'sourc-map',
+    devtool: 'source-map',
     module: {
       rules: [
         {
-          test: /jsx?$/,
+          test: /\.js$/,
           exclude: /node_modules/,
           loader: 'babel-loader',
           options: {
